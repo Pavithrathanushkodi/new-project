@@ -1,0 +1,67 @@
+/* Fuelpumps.css */
+
+/* Table styling */
+.fuel-table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures proper spacing and borders */
+    font-size: 1.1rem; /* Increase font size */
+  }
+  
+  .fuel-table th,
+  .fuel-table td {
+    padding: 30px; /* Add padding to create space inside cells */
+    text-align: center; /* Center the text in the table cells */
+  }
+  
+  /* Header styling */
+  .fuel-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  /* Row Border Bottom */
+  .fuel-table tr {
+    border-bottom: 1px solid #ddd; /* Adds a bottom border to each row */
+  }
+  
+  .fuel-table tr:last-child {
+    border-bottom: none; /* Removes the bottom border from the last row */
+  }
+  
+  /* Badge styling */
+  .badge {
+    padding: 10px 12px;
+ 
+    font-size: 1rem;
+  }
+  
+  .badge-success {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .badge-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+
+  .page-content button {
+    margin-left: 10px; /* Space between buttons */
+  }
+  input,select{
+    width:100% !important
+  }
+  .head{
+    display: flex;
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  /* In your Fuelpump.css */
+.card {
+  margin: 0px !important;
+}
+.col-12{
+  padding-left:0px !important;
+  padding-right:0px !important;
+}

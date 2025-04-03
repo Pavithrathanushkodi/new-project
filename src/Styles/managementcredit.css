@@ -1,0 +1,207 @@
+.oil-sales-container {
+    width: 100%;
+    margin: 2%;
+    padding: 20px;
+    background: white;
+    height: 84vh;
+  }
+  
+  /* Search Box */
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2%;
+  }
+  
+  .search-box input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 35px 10px 39px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .search-box .search-icon {
+    position: absolute;
+    right: 32%;
+    cursor: pointer;
+    color: black;
+  }
+  
+  /* Table Styling */
+  .OilSalesReport {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    height:60vh !important;
+  }
+  
+  .OilSalesReport th,
+  .OilSalesReport td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .OilSalesReport th {
+    background: #f7f7f7;
+    font-weight: bold;
+  }
+  
+  .OilSalesReport tbody tr:hover {
+    background: #f9f9f9;
+  }
+  
+  /* Due Amount Styling */
+  .due-amount {
+    color: red;
+    font-weight: bold;
+  }
+  
+  /* Buttons */
+  .edit-btn,
+  .view-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .edit-btn {
+    background: rgba(93, 96, 239, 0.15) !important; 
+    color: #6c5ce7 !important;
+  }
+  
+  .view-btn {
+    background: rgba(7, 224, 153, 0.15); 
+    color: rgba(7, 224, 153, 1);
+    margin-left: 5px;
+  }
+  
+
+  .edit-btn:hover {
+    background: #5a4fcf;
+    color: white;
+  }
+  
+  .view-btn:hover {
+    background: rgba(7, 224, 153, 1);
+    color: white;
+  }
+ 
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    margin: 0 3px;
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+  
+  .pagination .active {
+    background: rgba(93, 96, 239, 0.2);
+    color: #6c5ce7;
+    border: 1px solid #6c5ce7;
+  }
+
+  @media (max-width: 1200px) {
+    .search-box input {
+      max-width: 300px;
+    }
+  
+    .OilSalesReport th,
+    .OilSalesReport td {
+      padding: 10px;
+    }
+  
+    .pagination button {
+      padding: 6px 10px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+   
+    .search-box input {
+      max-width: 250px;
+    }
+  
+    .pagination {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .pagination button {
+      width: 100%;
+      margin: 5px 0;
+    }
+  
+    .OilSalesReport {
+      font-size: 14px;
+    }
+  
+    .OilSalesReport th,
+    .OilSalesReport td {
+      padding: 8px;
+    }
+  
+    .edit-btn,
+    .view-btn {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .oil-sales-container {
+      margin: 10px;
+      padding: 15px;
+    }
+  
+    .search-box input {
+      width: 100%;
+    }
+  
+    .search-box .search-icon {
+      right: 20px;
+    }
+  
+    .OilSalesReport th,
+    .OilSalesReport td {
+      padding: 6px;
+    }
+  
+    .edit-btn,
+    .view-btn {
+      font-size: 10px;
+      padding: 5px 8px;
+    }
+  
+    .pagination {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .pagination button {
+      width: 100%;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+  
+  
+    .due-amount {
+      font-size: 14px;
+    }
+  }
+  

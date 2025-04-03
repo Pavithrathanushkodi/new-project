@@ -1,0 +1,57 @@
+/* Table Styles */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    border: none !important;
+  }
+  
+  .table th,
+  .table td {
+    padding: 10px;
+    text-align: left;
+    border:none !important;
+  }
+  
+  .table th {
+    color:black !important;
+    font-weight: bold;
+    
+  }
+  .table td{
+    color:grey !important;
+    font-weight: bold;
+  
+  }
+  
+
+  /* Media Queries for Responsiveness */
+  @media screen and (max-width: 768px) {
+    .table th,
+    .table td {
+      font-size: 14px;
+      padding: 8px;
+    }
+  }
+  
+  @media screen and (max-width: 576px) {
+    .table th,
+    .table td {
+      font-size: 12px;
+      padding: 6px;
+    }
+  }
+  
+
+  .meter-input{
+    width:50%;
+  }
+  .decision-button{
+    display:flex ;
+    gap:30px;
+    justify-content: center;
+  }
+  .btn{
+ 
+    font-size: 20px !important;
+  }

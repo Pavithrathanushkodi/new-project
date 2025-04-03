@@ -1,0 +1,81 @@
+.datatable-container {
+    padding: 24px;
+    background-color: #ffff;
+    min-height: 100vh;
+  }
+  
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  
+  .date-input {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 200px;
+  }
+  
+  .search-button {
+    background-color: white;
+    color: #5d60ef;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #5d60ef;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .search-button:hover {
+    background-color: #5d60ef;
+    color: white;
+  }
+  
+  /* Table */
+  .tablewrapper {
+    background-color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th,
+  td {
+    padding: 12px;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  th {
+    background-color: #ffff;
+    font-weight: bold;
+  }
+  
+  /* Download Button */
+  .download-button {
+    background-color: rgba(7, 224, 153, 0.15);
+    color: #07e099;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .download-button:hover {
+    background-color: #07e099;
+    color: white;
+  }

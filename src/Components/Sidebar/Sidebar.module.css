@@ -1,0 +1,109 @@
+/* Sidebar.module.css */
+
+/* Sidebar Container */
+.sidebar {
+  width: 20%;
+  height: 100vh;
+  background-color: white !important;
+  position:absolute;
+  top:10%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  background-color: transparent; /* Sidebar background removed */
+  transition: all 0.3s ease;
+}
+
+/* Sidebar Card */
+.sidebarCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top:25px;
+}
+
+/* Sidebar Button */
+.sidebarButton {
+  width:100% !important;
+  color: gray !important ;
+  font-weight: 400 !important;
+  text-align: left !important;
+  display: flex !important;
+  gap:20px !important;
+  justify-content: left !important;
+  border-radius: 0px !important;
+  padding: 12px 15px !important;
+  align-items: center !important;
+  text-transform: capitalize !important;
+
+  font-weight: 500 !important;
+  font-family: poppins !important;
+  padding:25px !important;
+  background-color: white;
+}
+
+
+
+.sidebarButton.active {
+  background-color: blue; 
+  color: white !important; 
+}
+
+
+.expanded {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 10px; 
+}
+
+
+.activeMenu {
+  color: blue; 
+ 
+  border-radius: 4px;
+  padding: 8px;
+  font-weight: bold;
+}
+
+.MdExpandMore,
+.MdExpandLess {
+  color: black; 
+  font-size: 24px;
+  margin-left: auto;
+}
+
+
+a {
+  text-decoration: none;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+}
+
+/* Sidebar Footer */
+.sidebarFooter {
+  position: fixed !important;
+  bottom:0% !important;
+  padding: 10px 0;
+  display: flex;
+  gap:10px;
+  width:20% !important;
+}
+
+.sidebarFooter .settingsButton {
+  margin-top: 10px;
+  color: black;
+  font-weight: normal;
+  color:white !important;
+  width:100%;
+  background-color: blue !important;
+  font-size: 1.5rem !important;
+}
+
+.sidebarFooter .sidebarButton:hover {
+  background-color: #f1f1f1;
+}
+
+.sidebarFooter .icon {
+  font-size: 1.5rem !important;
+}

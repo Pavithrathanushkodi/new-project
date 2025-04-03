@@ -1,0 +1,24 @@
+.card{
+
+  padding:20px;
+}
+.add-btn{
+  display: flex;
+  justify-content: end;
+  align-items: center;
+
+}
+.decision-btn{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap:40px;
+  left: 25%;
+  right: 25%
+}
+
+.card{
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px !important;
+  border-radius: 20px;
+
+}
