@@ -1,34 +1,63 @@
-import React, { useState } from 'react';
-import { BsFuelPump } from "react-icons/bs";
-import { Modal, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { BsFuelPump } from 'react-icons/bs';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { FaChartLine } from 'react-icons/fa';
-import '../Styles/dashboard.css'
+import '../Styles/dashboard.css';
+
 const Dashboard = () => {
-  const [petrolPrice, setPetrolPrice] = useState(90);
-  const [dieselPrice, setDieselPrice] = useState(101);
-
-  
+  const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newPetrolPrice, setNewPetrolPrice] = useState(petrolPrice);
-  const [newDieselPrice, setNewDieselPrice] = useState(dieselPrice);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newPrice, setNewPrice] = useState(0);
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/products')
+      .then(response => {
+        console.log('Data fetched:', response.data);  // Log the fetched data to ensure it's correct
+        setProducts(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+      });
+  }, []);
+  
 
-  const handlePriceChange = (e, fuelType) => {
-    const value = parseFloat(e.target.value);
-    if (fuelType === 'petrol') {
-      setNewPetrolPrice(isNaN(value) ? 0 : value);  
-    } else if (fuelType === 'diesel') {
-      setNewDieselPrice(isNaN(value) ? 0 : value);  
-    }
+  const handleOpenModal = () => {
+    setSelectedProduct(null); 
+    setNewPrice(0);  
+    setShowModal(true);
   };
 
-  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
+  const handlePriceChange = (e) => {
+    setNewPrice(e.target.value);
+  };
+
+  const handleProductSelect = (e) => {
+    const product = products.find((p) => p.id === parseInt(e.target.value));
+    setSelectedProduct(product);
+    setNewPrice(product.price);  
+  };
+
   const handleSavePrices = () => {
-  
-    setPetrolPrice(newPetrolPrice);
-    setDieselPrice(newDieselPrice);
-    handleCloseModal();
+    if (selectedProduct) {
+    
+      axios.put('http://localhost:5000/api/products/update-price', {
+        id: selectedProduct.id,
+        newPrice: newPrice
+      })
+      .then(response => {
+      
+        setProducts(prevProducts => 
+          prevProducts.map(product => 
+            product.id === selectedProduct.id ? { ...product, price: newPrice } : product
+          )
+        );
+        handleCloseModal();
+      })
+      .catch(error => console.error('Error updating price:', error));
+    }
   };
 
   return (
@@ -37,9 +66,9 @@ const Dashboard = () => {
         <div className='page-navigation d-flex justify-content-between align-items-center'>
           <h2 className='ml-2'>Dashboard</h2>
           <div className='page-content d-flex align-items-center mr-3'>
-            {/* Replaced h6 with a link for Price Update */}
+           
             <a href="#" className="text-decoration-none" onClick={handleOpenModal}>
-              <h6 className="m-0">Price Update</h6>
+              <h6 className="m-0">Update Price</h6>
             </a>
             <h6>Notifications</h6>
           </div>
@@ -50,120 +79,81 @@ const Dashboard = () => {
         <div className="price-report report">
           <h5>Today Price</h5>
           <div className='price-container'>
-            <div className="card petrol-card">
-              <div className='edit'>
-                <h6>Petrol</h6>
-              </div>
-              <div className="card-body">
-                <div className='petrol-icon'>
-                  <BsFuelPump />
+            {products.map((product) => (
+              <div key={product.id} className="card">
+                <div className='edit'>
+                  <h6>{product.name}</h6>
                 </div>
-                <div className='price-info'>
-                  <h6 className='price'>${petrolPrice}</h6>
-                </div>
-              </div>
-            </div>
-
-            <div className="card diesel-card">
-              <div className='edit'>
-                <h6>Diesel</h6>
-              </div>
-              <div className="card-body">
-                <div className='diesel-icon'>
-                  <BsFuelPump />
-                </div>
-                <div className='price-info'>
-                  <h6 className='price'>${dieselPrice}</h6>
+                <div className="card-body">
+                  <div className='petrol-icon'>
+                    <BsFuelPump />
+                  </div>
+                  <div className='price-info'>
+                    <h6 className='price'>${product.price}</h6>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Modal for Fuel Price Update */}
-        <Modal show={showModal} onHide={handleCloseModal}> 
+   
+        <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header closeButton>
-            <Modal.Title>          
+            <Modal.Title>
               <FaChartLine style={{ marginRight: '10px', fontSize: '24px' }} />
-          Fuel Price Update Module
-             </Modal.Title>
+              Product Price Update
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Fuel Type</th>
-                  <th>Current Price Per Litre</th>
-                  <th>New Price Per Litre</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Petrol</td>
-                  <td>${petrolPrice}</td>
-                  <td>
-                    <input
+            <Form>
+             
+              <Form.Group controlId="productSelect">
+                <Form.Label>Select Product</Form.Label>
+                <Form.Control as="select" onChange={handleProductSelect}>
+                  <option value="">Select a product</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+       
+              {selectedProduct && (
+                <>
+                
+                <Form.Group controlId="currentPriceInput">
+            <Form.Label>Current Price</Form.Label>
+            <Form.Control 
+              type="text"
+              value={`$${selectedProduct.price}`}  
+              readOnly  
+              disabled
+            />
+          </Form.Group>
+                  <Form.Group controlId="priceInput">
+                    <Form.Label>New Price</Form.Label>
+                    <Form.Control 
                       type="number"
-                      value={newPetrolPrice}
-                      onChange={(e) => handlePriceChange(e, 'petrol')}
-                      className="form-control"
-                      aria-label="New Petrol Price"
+                      value={newPrice}
+                      onChange={handlePriceChange}
+                      placeholder="Enter new price"
                     />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Diesel</td>
-                  <td>${dieselPrice}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={newDieselPrice}
-                      onChange={(e) => handlePriceChange(e, 'diesel')}
-                      className="form-control"
-                      aria-label="New Diesel Price"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Diesel</td>
-                  <td>${dieselPrice}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={newDieselPrice}
-                      onChange={(e) => handlePriceChange(e, 'diesel')}
-                      className="form-control"
-                      aria-label="New Diesel Price"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Diesel</td>
-                  <td>${dieselPrice}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={newDieselPrice}
-                      onChange={(e) => handlePriceChange(e, 'diesel')}
-                      className="form-control"
-                      aria-label="New Diesel Price"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </Form.Group>
+                </>
+              )}
+            </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleSavePrices}>
+            <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+            <Button variant="primary" onClick={handleSavePrices} disabled={!selectedProduct}>
               Save Changes
             </Button>
           </Modal.Footer>
         </Modal>
-             {/* Stock Analysis and Daily Sales Sections */}
-      <div className="stock-report report">
+        <div className="stock-report report">
         <h5>Stock Analysis</h5>
         <div className="circle-container">
           <div className="circle petrol">
@@ -220,6 +210,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+  
+      
     </section>
   );
 }

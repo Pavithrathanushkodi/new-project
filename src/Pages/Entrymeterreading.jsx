@@ -1,128 +1,146 @@
-import React, { useState } from 'react';
-import '../Styles/meterreading.css'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const  Entrymeterreading = () => {
-  const [meterData, setMeterData] = useState([
-    {
-      product: "Petrol",
-      nozzles: [
-        { name: "Nozzle 1", oldMeterValue: 1000,  },
-       
-      ],
-    },
-    {
-      product: "Petrol",
-      nozzles: [
-        { name: "Nozzle 2", oldMeterValue: 1000,  },
+const MeterReading = () => {
+  const [meterReadings, setMeterReadings] = useState([]);
+  const [newValues, setNewValues] = useState({});
+  const [isUpdated, setIsUpdated] = useState(false); // Track if any updates were made today
+  const [currentDate, setCurrentDate] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // Success message state
+
+  // Fetch meter readings from the API when the component mounts
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/meter-readings')
+      .then(response => {
+        const data = response.data;
+        setMeterReadings(data);
         
-      ],
-    },
-    {
-      product: "Diesel",
-      nozzles: [
-        { name: "Nozzle 1", oldMeterValue: 2000,},
-       
-      ],
-    },
-    {
-      product: "Diesel",
-      nozzles: [
-     
-        { name: "Nozzle 2", oldMeterValue: 1800,},
-      ],
-    },
-  ]);
+        // Get the date of the last update (assuming it's in the `updated_at` field)
+        const lastUpdateDate = data.length > 0 ? data[0].updated_at.split(' ')[0] : null;
 
-  const handleNewMeterValueChange = (productIndex, nozzleIndex, newValue) => {
-    const updatedMeterData = [...meterData];
-    updatedMeterData[productIndex].nozzles[nozzleIndex].newMeterValue = newValue;
-    setMeterData(updatedMeterData);
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        setCurrentDate(today);
+
+        if (lastUpdateDate === today) {
+          setIsUpdated(true); // Mark as updated today if the last update was today
+        }
+      })
+      .catch(error => console.error('Error fetching meter readings:', error));
+  }, []);
+
+  // Handle change for new meter values
+  const handleInputChange = (e, nozzleName) => {
+    const { name, value } = e.target;
+    setNewValues(prevState => ({
+      ...prevState,
+      [nozzleName]: {
+        ...prevState[nozzleName],
+        [name]: value,
+      },
+    }));
+  };
+
+  // Handle save of updated meter values for all rows
+  const handleSaveAll = () => {
+    const updatedReadings = meterReadings.map((reading) => {
+      const updatedValues = newValues[reading.nozzle_name] || {};
+
+      // If it's today, save new values as today's new values
+      const petrolNew = updatedValues.petrolNew || reading.petrol_new_meter_value;
+      const dieselNew = updatedValues.dieselNew || reading.diesel_new_meter_value;
+
+      // If it's tomorrow, update old values with today's new values
+      const petrolOld = currentDate !== reading.updated_at.split(' ')[0] ? petrolNew : reading.petrol_old_meter_value;
+      const dieselOld = currentDate !== reading.updated_at.split(' ')[0] ? dieselNew : reading.diesel_old_meter_value;
+
+      return {
+        id: reading.id,
+        petrolOld: petrolOld,
+        petrolNew: petrolNew,
+        dieselOld: dieselOld,
+        dieselNew: dieselNew,
+      };
+    });
+
+    // Send the update request for all meter readings
+    axios.put('http://localhost:5000/api/meter-readings/update-all', updatedReadings)
+      .then((response) => {
+        console.log('Updated successfully:', response.data);
+        // Update the local state with the new values and mark as updated
+        setMeterReadings(prevReadings =>
+          prevReadings.map((reading) => {
+            const updatedValues = newValues[reading.nozzle_name] || {};
+
+            return updatedReadings.find(updated => updated.id === reading.id)
+              ? {
+                  ...reading,
+                  petrol_old_meter_value: updatedValues.petrolNew || reading.petrol_new_meter_value,
+                  diesel_old_meter_value: updatedValues.dieselNew || reading.diesel_new_meter_value,
+                  petrol_new_meter_value: updatedValues.petrolNew || reading.petrol_new_meter_value,
+                  diesel_new_meter_value: updatedValues.dieselNew || reading.diesel_new_meter_value,
+                }
+              : reading;
+          })
+        );
+        setIsUpdated(true); // Mark that data is updated today
+        setSuccessMessage("Your meter readings have been updated successfully!");
+      })
+      .catch((error) => {
+        console.error('Error saving data:', error);
+        setSuccessMessage("There was an error updating the meter readings.");
+      });
   };
 
   return (
-    <div className="container">
-      <div className="row">
-        <div className='page-navigation d-flex justify-content-between align-items-center'>
-          <h2 className='ml-2'>MeterReading Entry</h2>
-          <div className='page-content d-flex align-items-center mr-3'>
-            {/* Replaced h6 with a link for Price Update */}
-            <a>
-              <h6 className="m-0">view History</h6>
-            </a>
-           
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-md-12">
-          <div className="card">
-         
-            {/* Table */}
-           <table className="table table-bordered mt-4" style={{ height: '60vh' }}>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Nozzle</th>
-                  <th>Old Meter Value</th>
-                  <th>New Meter Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {meterData.map((productData, productIndex) => (
-                  <React.Fragment key={productIndex}>
-                    <tr>
-                      <td rowSpan={productData.nozzles.length}>{productData.product}</td>
-                      <td>{productData.nozzles[0].name}</td>
-                      <td>{productData.nozzles[0].oldMeterValue}</td>
-                      <td>
-                        <input
-                          type="number"
-                          value={productData.nozzles[0].newMeterValue}
-                          onChange={(e) =>
-                            handleNewMeterValueChange(
-                              productIndex,
-                              0,
-                              e.target.value
-                            )
-                          }
-                          className="meter-input"
-                        />
-                      </td>
-                    </tr>
-                    {productData.nozzles.slice(1).map((nozzle, index) => (
-                      <tr key={index}>
-                        <td>{nozzle.name}</td>
-                        <td>{nozzle.oldMeterValue}</td>
-                        <td>
-                          <input
-                            type="number"
-                            value={nozzle.newMeterValue}
-                            onChange={(e) =>
-                              handleNewMeterValueChange(
-                                productIndex,
-                                index + 1,
-                                e.target.value
-                              )
-                            }
-                            className="meter-input"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+    <div>
+      <h2>Meter Readings</h2>
 
-            <div className='decision-button'>
-              <button className='btn btn-primary'>Cancel</button>
-              <button className='btn btn-primary'>Save</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Success message display */}
+      {successMessage && <p>{successMessage}</p>}
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nozzle Name</th>
+            <th>Petrol Old</th>
+            <th>Petrol New</th>
+            <th>Diesel Old</th>
+            <th>Diesel New</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meterReadings.map((reading) => (
+            <tr key={reading.id}>
+              <td>{reading.nozzle_name}</td>
+              <td>{reading.petrol_old_meter_value}</td>
+              <td>
+                <input
+                  type="number"
+                  name="petrolNew"
+                  value={newValues[reading.nozzle_name]?.petrolNew || ''}
+                  onChange={(e) => handleInputChange(e, reading.nozzle_name)}
+                  disabled={isUpdated} // Disable if already updated today
+                />
+              </td>
+              <td>{reading.diesel_old_meter_value}</td>
+              <td>
+                <input
+                  type="number"
+                  name="dieselNew"
+                  value={newValues[reading.nozzle_name]?.dieselNew || ''}
+                  onChange={(e) => handleInputChange(e, reading.nozzle_name)}
+                  disabled={isUpdated} // Disable if already updated today
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Single Save Button for all readings */}
+      <button onClick={handleSaveAll} disabled={isUpdated}>Save All</button>
     </div>
   );
 };
 
-export default Entrymeterreading;
+export default MeterReading;

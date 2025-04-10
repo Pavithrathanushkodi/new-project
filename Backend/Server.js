@@ -1,20 +1,17 @@
-const express = require("express");
-const cors = require("cors");
-const { connectDB } = require("./config/db");
-const meterReadingRoutes = require("./routes/meterReadingRoutes");
-
+const express = require('express');
+const productRoutes = require('./routes/productRoutes');
+const meterReadingRoutes = require('./routes/meterReadingRoutes');
+const cors = require('cors');
 const app = express();
+
+const port = 5000;
+app.use(cors()); 
 app.use(express.json());
-app.use(cors());
 
-// Use the routes
-app.use("/api", meterReadingRoutes);
-
-// Connect to the database
-connectDB();
-
+// Use product routes
+app.use('/api/products', productRoutes);
+app.use('/api/meter-readings', meterReadingRoutes);
 // Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
