@@ -4,104 +4,86 @@ import axios from 'axios';
 const MeterReading = () => {
   const [meterReadings, setMeterReadings] = useState([]);
   const [newValues, setNewValues] = useState({});
-  const [isUpdated, setIsUpdated] = useState(false); // Track if any updates were made today
-  const [currentDate, setCurrentDate] = useState('');
-  const [successMessage, setSuccessMessage] = useState(''); // Success message state
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Fetch meter readings from the API when the component mounts
   useEffect(() => {
-    axios.get('http://localhost:5000/api/meter-readings')
+    axios.get('http://localhost:5000/api/nozzles')
       .then(response => {
         const data = response.data;
         setMeterReadings(data);
-        
-        // Get the date of the last update (assuming it's in the `updated_at` field)
-        const lastUpdateDate = data.length > 0 ? data[0].updated_at.split(' ')[0] : null;
-
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-        setCurrentDate(today);
-
-        if (lastUpdateDate === today) {
-          setIsUpdated(true); // Mark as updated today if the last update was today
-        }
       })
-      .catch(error => console.error('Error fetching meter readings:', error));
+      .catch(error => console.error('Error fetching nozzle data:', error));
   }, []);
 
-  // Handle change for new meter values
   const handleInputChange = (e, nozzleName) => {
     const { name, value } = e.target;
-    setNewValues(prevState => ({
-      ...prevState,
+    setNewValues(prev => ({
+      ...prev,
       [nozzleName]: {
-        ...prevState[nozzleName],
+        ...prev[nozzleName],
         [name]: value,
       },
     }));
   };
 
-  // Handle save of updated meter values for all rows
-  const handleSaveAll = () => {
-    const updatedReadings = meterReadings.map((reading) => {
-      const updatedValues = newValues[reading.nozzle_name] || {};
-
-      // If it's today, save new values as today's new values
-      const petrolNew = updatedValues.petrolNew || reading.petrol_new_meter_value;
-      const dieselNew = updatedValues.dieselNew || reading.diesel_new_meter_value;
-
-      // If it's tomorrow, update old values with today's new values
-      const petrolOld = currentDate !== reading.updated_at.split(' ')[0] ? petrolNew : reading.petrol_old_meter_value;
-      const dieselOld = currentDate !== reading.updated_at.split(' ')[0] ? dieselNew : reading.diesel_old_meter_value;
-
+  const handleSaveAll = async () => {
+    const updatedReadings = meterReadings.map(reading => {
+      const updated = newValues[reading.nozzle_name] || {};
+  
+      const petrolNew = parseFloat(updated.petrolNew);
+      const dieselNew = parseFloat(updated.dieselNew);
+  
+      const petrolOld = parseFloat(updated.petrolOld ?? reading.petrol_new);
+      const dieselOld = parseFloat(updated.dieselOld ?? reading.diesel_new);
+  
       return {
         id: reading.id,
-        petrolOld: petrolOld,
-        petrolNew: petrolNew,
-        dieselOld: dieselOld,
-        dieselNew: dieselNew,
+        nozzle_name: reading.nozzle_name,
+        petrol_old: isNaN(petrolOld) ? 0 : petrolOld,
+        petrol_new: isNaN(petrolNew) ? reading.petrol_new : petrolNew,
+        diesel_old: isNaN(dieselOld) ? 0 : dieselOld,
+        diesel_new: isNaN(dieselNew) ? reading.diesel_new : dieselNew,
       };
     });
-
-    // Send the update request for all meter readings
-    axios.put('http://localhost:5000/api/meter-readings/update-all', updatedReadings)
-      .then((response) => {
-        console.log('Updated successfully:', response.data);
-        // Update the local state with the new values and mark as updated
-        setMeterReadings(prevReadings =>
-          prevReadings.map((reading) => {
-            const updatedValues = newValues[reading.nozzle_name] || {};
-
-            return updatedReadings.find(updated => updated.id === reading.id)
-              ? {
-                  ...reading,
-                  petrol_old_meter_value: updatedValues.petrolNew || reading.petrol_new_meter_value,
-                  diesel_old_meter_value: updatedValues.dieselNew || reading.diesel_new_meter_value,
-                  petrol_new_meter_value: updatedValues.petrolNew || reading.petrol_new_meter_value,
-                  diesel_new_meter_value: updatedValues.dieselNew || reading.diesel_new_meter_value,
-                }
-              : reading;
-          })
-        );
-        setIsUpdated(true); // Mark that data is updated today
-        setSuccessMessage("Your meter readings have been updated successfully!");
-      })
-      .catch((error) => {
-        console.error('Error saving data:', error);
-        setSuccessMessage("There was an error updating the meter readings.");
+  
+    try {
+   
+      await axios.put('http://localhost:5000/api/nozzles/update-all', updatedReadings);
+  
+      await axios.put('http://localhost:5000/api/stock/update-today-sales', updatedReadings);
+  
+      setSuccessMessage('Meter readings and stock updated successfully!');
+  
+      const updatedState = meterReadings.map(reading => {
+        const updated = newValues[reading.nozzle_name] || {};
+        return {
+          ...reading,
+          petrol_old: parseFloat(updated.petrolOld) || reading.petrol_new,
+          petrol_new: parseFloat(updated.petrolNew) || reading.petrol_new,
+          diesel_old: parseFloat(updated.dieselOld) || reading.diesel_new,
+          diesel_new: parseFloat(updated.dieselNew) || reading.diesel_new,
+          updated_at: new Date().toISOString(),
+        };
       });
+  
+      setMeterReadings(updatedState);
+      setNewValues({});
+    } catch (error) {
+      console.error('Error updating:', error.response?.data || error.message);
+      setSuccessMessage('Error updating meter and stock data.');
+    }
   };
+  
 
   return (
     <div>
       <h2>Meter Readings</h2>
-
-      {/* Success message display */}
-      {successMessage && <p>{successMessage}</p>}
+      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 
       <table>
         <thead>
           <tr>
-            <th>Nozzle Name</th>
+            <th>Nozzle</th>
             <th>Petrol Old</th>
             <th>Petrol New</th>
             <th>Diesel Old</th>
@@ -109,27 +91,47 @@ const MeterReading = () => {
           </tr>
         </thead>
         <tbody>
-          {meterReadings.map((reading) => (
+          {meterReadings.map(reading => (
             <tr key={reading.id}>
               <td>{reading.nozzle_name}</td>
-              <td>{reading.petrol_old_meter_value}</td>
+
+              <td>
+                <input
+                  type="number"
+                  name="petrolOld"
+                  style={{ width: '80%' }}
+                  value={newValues[reading.nozzle_name]?.petrolOld ?? reading.petrol_old}
+                  onChange={(e) => handleInputChange(e, reading.nozzle_name)}
+                />
+              </td>
+
               <td>
                 <input
                   type="number"
                   name="petrolNew"
-                  value={newValues[reading.nozzle_name]?.petrolNew || ''}
+                  style={{ width: '80%' }}
+                  value={newValues[reading.nozzle_name]?.petrolNew ?? reading.petrol_new}
                   onChange={(e) => handleInputChange(e, reading.nozzle_name)}
-                  disabled={isUpdated} // Disable if already updated today
                 />
               </td>
-              <td>{reading.diesel_old_meter_value}</td>
+
+              <td>
+                <input
+                  type="number"
+                  name="dieselOld"
+                  style={{ width: '80%' }}
+                  value={newValues[reading.nozzle_name]?.dieselOld ?? reading.diesel_old}
+                  onChange={(e) => handleInputChange(e, reading.nozzle_name)}
+                />
+              </td>
+
               <td>
                 <input
                   type="number"
                   name="dieselNew"
-                  value={newValues[reading.nozzle_name]?.dieselNew || ''}
+                  style={{ width: '80%' }}
+                  value={newValues[reading.nozzle_name]?.dieselNew ?? reading.diesel_new}
                   onChange={(e) => handleInputChange(e, reading.nozzle_name)}
-                  disabled={isUpdated} // Disable if already updated today
                 />
               </td>
             </tr>
@@ -137,8 +139,8 @@ const MeterReading = () => {
         </tbody>
       </table>
 
-      {/* Single Save Button for all readings */}
-      <button onClick={handleSaveAll} disabled={isUpdated}>Save All</button>
+      <br />
+      <button onClick={handleSaveAll}>Save All</button>
     </div>
   );
 };

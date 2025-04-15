@@ -10,21 +10,29 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newPrice, setNewPrice] = useState(0);
+  const [salesSummary, setSalesSummary] = useState(null);
+
   useEffect(() => {
     axios.get('http://localhost:5000/api/products')
       .then(response => {
-        console.log('Data fetched:', response.data);  // Log the fetched data to ensure it's correct
         setProducts(response.data);
       })
       .catch(error => {
         console.error('Error fetching products:', error);
       });
+
+    axios.get('http://localhost:5000/api/nozzles/sales-summary')
+      .then(res => {
+        setSalesSummary(res.data);
+      })
+      .catch(err => {
+        console.error('Error fetching sales summary:', err);
+      });
   }, []);
-  
 
   const handleOpenModal = () => {
-    setSelectedProduct(null); 
-    setNewPrice(0);  
+    setSelectedProduct(null);
+    setNewPrice(0);
     setShowModal(true);
   };
 
@@ -37,27 +45,29 @@ const Dashboard = () => {
   const handleProductSelect = (e) => {
     const product = products.find((p) => p.id === parseInt(e.target.value));
     setSelectedProduct(product);
-    setNewPrice(product.price);  
+    setNewPrice(product.price);
   };
 
   const handleSavePrices = () => {
     if (selectedProduct) {
-    
       axios.put('http://localhost:5000/api/products/update-price', {
         id: selectedProduct.id,
         newPrice: newPrice
       })
-      .then(response => {
-      
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product.id === selectedProduct.id ? { ...product, price: newPrice } : product
-          )
-        );
-        handleCloseModal();
-      })
-      .catch(error => console.error('Error updating price:', error));
+        .then(() => {
+          setProducts(prevProducts =>
+            prevProducts.map(product =>
+              product.id === selectedProduct.id ? { ...product, price: newPrice } : product
+            )
+          );
+          handleCloseModal();
+        })
+        .catch(error => console.error('Error updating price:', error));
     }
+  };
+
+  const formatCurrency = (value) => {
+    return `₹${Number(value || 0).toLocaleString()}`;
   };
 
   return (
@@ -66,7 +76,6 @@ const Dashboard = () => {
         <div className='page-navigation d-flex justify-content-between align-items-center'>
           <h2 className='ml-2'>Dashboard</h2>
           <div className='page-content d-flex align-items-center mr-3'>
-           
             <a href="#" className="text-decoration-none" onClick={handleOpenModal}>
               <h6 className="m-0">Update Price</h6>
             </a>
@@ -89,7 +98,7 @@ const Dashboard = () => {
                     <BsFuelPump />
                   </div>
                   <div className='price-info'>
-                    <h6 className='price'>${product.price}</h6>
+                    <h6 className='price'>₹{product.price}</h6>
                   </div>
                 </div>
               </div>
@@ -97,7 +106,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-   
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header closeButton>
             <Modal.Title>
@@ -107,7 +115,6 @@ const Dashboard = () => {
           </Modal.Header>
           <Modal.Body>
             <Form>
-             
               <Form.Group controlId="productSelect">
                 <Form.Label>Select Product</Form.Label>
                 <Form.Control as="select" onChange={handleProductSelect}>
@@ -120,22 +127,20 @@ const Dashboard = () => {
                 </Form.Control>
               </Form.Group>
 
-       
               {selectedProduct && (
                 <>
-                
-                <Form.Group controlId="currentPriceInput">
-            <Form.Label>Current Price</Form.Label>
-            <Form.Control 
-              type="text"
-              value={`$${selectedProduct.price}`}  
-              readOnly  
-              disabled
-            />
-          </Form.Group>
+                  <Form.Group controlId="currentPriceInput">
+                    <Form.Label>Current Price</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={`₹${selectedProduct.price}`}
+                      readOnly
+                      disabled
+                    />
+                  </Form.Group>
                   <Form.Group controlId="priceInput">
                     <Form.Label>New Price</Form.Label>
-                    <Form.Control 
+                    <Form.Control
                       type="number"
                       value={newPrice}
                       onChange={handlePriceChange}
@@ -153,23 +158,23 @@ const Dashboard = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+
         <div className="stock-report report">
-        <h5>Stock Analysis</h5>
-        <div className="circle-container">
-          <div className="circle petrol">
-            <div className="circle-content"></div>
-            <div className="label">Petrol</div>
-          </div>
-          <div className="circle diesel">
-            <div className="circle-content"></div>
-            <div className="label">Diesel</div>
+          <h5>Stock Analysis</h5>
+          <div className="circle-container">
+            <div className="circle petrol">
+              <div className="circle-content"></div>
+              <div className="label">Petrol</div>
+            </div>
+            <div className="circle diesel">
+              <div className="circle-content"></div>
+              <div className="label">Diesel</div>
+            </div>
           </div>
         </div>
       </div>
 
-      </div>
-
- 
+      {/* DAILY SALES SECTION */}
       <div className='row'>
         <div className="col-md-12 sales-report report">
           <h5>Daily Sales</h5>
@@ -188,32 +193,30 @@ const Dashboard = () => {
               <tbody>
                 <tr>
                   <td>Petrol</td>
-                  <td>800</td>
-                  <td>$75,200</td>
-                  <td>275</td>
-                  <td>$25,850</td>
-                  <td>$49,400</td>
+                  <td>{salesSummary ? salesSummary.total_petrol_qty : 'Loading...'}</td>
+                  <td>{salesSummary ? formatCurrency(salesSummary.total_petrol_value) : 'Loading...'}</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
                 </tr>
                 <tr>
                   <td>Diesel</td>
-                  <td>567</td>
-                  <td>$57,267</td>
-                  <td>134</td>
-                  <td>$13,534</td>
-                  <td>$43,733</td>
+                  <td>{salesSummary ? salesSummary.total_diesel_qty : 'Loading...'}</td>
+                  <td>{salesSummary ? formatCurrency(salesSummary.total_diesel_value) : 'Loading...'}</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div className="total-button">
-            <button className='btn btn-primary tal-btn'>Total 200</button>
+            <button className='btn btn-primary tal-btn'>Total</button>
           </div>
         </div>
       </div>
-  
-      
     </section>
   );
-}
+};
 
 export default Dashboard;
